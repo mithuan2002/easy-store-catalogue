@@ -35,6 +35,15 @@ const Index = () => {
     return values.map(value => value.replace(/^"|"$/g, '').trim());
   };
 
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const handleSpreadsheetSubmit = async (url: string) => {
     setIsLoading(true);
     const sheetId = extractSheetId(url);
@@ -99,13 +108,21 @@ const Index = () => {
               product.description = value;
               break;
             case 'image':
-              product.image = value;
+              // Only set the image URL if it's a valid URL
+              if (value && isValidUrl(value)) {
+                product.image = value;
+              }
               break;
             case 'category':
               product.category = value;
               break;
           }
         });
+
+        // If no valid image URL is provided, use a placeholder
+        if (!product.image) {
+          product.image = "https://source.unsplash.com/400x400/?product";
+        }
 
         return product;
       }).filter(product => {
