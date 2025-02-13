@@ -15,6 +15,26 @@ const Index = () => {
     return matches ? matches[1] : null;
   };
 
+  const parseCsvRow = (row: string) => {
+    const values = [];
+    let currentValue = '';
+    let insideQuotes = false;
+    
+    for (let i = 0; i < row.length; i++) {
+      const char = row[i];
+      if (char === '"') {
+        insideQuotes = !insideQuotes;
+      } else if (char === ',' && !insideQuotes) {
+        values.push(currentValue.trim());
+        currentValue = '';
+      } else {
+        currentValue += char;
+      }
+    }
+    values.push(currentValue.trim());
+    return values.map(value => value.replace(/^"|"$/g, '').trim());
+  };
+
   const handleSpreadsheetSubmit = async (url: string) => {
     setIsLoading(true);
     const sheetId = extractSheetId(url);
@@ -39,13 +59,27 @@ const Index = () => {
       }
 
       const csvText = await response.text();
-      const rows = csvText.split('\n').map(row => row.split(','));
+      const rows = csvText.split('\n').filter(row => row.trim().length > 0);
       
-      // Assume first row contains headers
-      const headers = rows[0].map(header => header.trim().toLowerCase());
+      if (rows.length < 2) {
+        throw new Error('Spreadsheet must contain at least headers and one product');
+      }
+
+      // Parse headers (first row)
+      const headers = parseCsvRow(rows[0]).map(header => header.toLowerCase().trim());
       
+      // Validate required columns
+      if (!headers.includes('name') || !headers.includes('price')) {
+        throw new Error('Spreadsheet must contain "name" and "price" columns');
+      }
+
+      console.log('Headers found:', headers); // Debug log
+
       // Convert remaining rows to products
       const importedProducts = rows.slice(1).map((row, index) => {
+        const values = parseCsvRow(row);
+        console.log('Processing row:', values); // Debug log
+
         const product: Product = {
           id: (index + 1).toString(),
           name: '',
@@ -53,7 +87,7 @@ const Index = () => {
         };
 
         headers.forEach((header, i) => {
-          const value = row[i]?.trim() || '';
+          const value = values[i] || '';
           switch (header) {
             case 'name':
               product.name = value;
@@ -74,11 +108,19 @@ const Index = () => {
         });
 
         return product;
-      }).filter(product => product.name && product.price); // Only include products with at least a name and price
+      }).filter(product => {
+        const isValid = product.name && product.price;
+        if (!isValid) {
+          console.log('Invalid product:', product); // Debug log
+        }
+        return isValid;
+      });
 
       if (importedProducts.length === 0) {
-        throw new Error('No valid products found in the spreadsheet');
+        throw new Error('No valid products found in the spreadsheet. Make sure you have "name" and "price" columns with valid data.');
       }
+
+      console.log('Imported products:', importedProducts); // Debug log
 
       setProducts(importedProducts);
       toast({
@@ -89,7 +131,7 @@ const Index = () => {
       console.error("Error fetching spreadsheet:", error);
       toast({
         title: "Error",
-        description: "Failed to import spreadsheet data. Make sure the sheet is publicly accessible and contains the required columns (name, price).",
+        description: error instanceof Error ? error.message : "Failed to import spreadsheet data. Make sure the sheet is publicly accessible and contains the required columns (name, price).",
         variant: "destructive",
       });
     } finally {
