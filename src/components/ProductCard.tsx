@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 
 export interface Product {
@@ -11,19 +12,28 @@ export interface Product {
 }
 
 export const ProductCard = ({ product }: { product: Product }) => {
+  const [imageError, setImageError] = useState(false);
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  const imageUrl = imageError || !product.image 
+    ? "https://source.unsplash.com/400x400/?product" 
+    : product.image;
+
   return (
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg animate-fadeIn">
       <CardContent className="p-0">
-        {product.image && (
-          <div className="aspect-square overflow-hidden bg-gray-100">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-              loading="lazy"
-            />
-          </div>
-        )}
+        <div className="aspect-square overflow-hidden bg-gray-100">
+          <img
+            src={imageUrl}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+            loading="lazy"
+            onError={handleImageError}
+          />
+        </div>
         <div className="p-6 space-y-2">
           {product.category && (
             <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
