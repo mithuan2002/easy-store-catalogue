@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
@@ -11,7 +12,7 @@ export const StoreDesignAssistant = () => {
   const handleDesignSuggestion = async () => {
     setIsLoading(true);
     try {
-      // Mock response for now - you would replace this with actual AI service call
+      // For now using mock data - you'll need to add your OpenAI API key through Replit Secrets
       setSuggestions([
         {
           title: "Modern Minimalist Design",
