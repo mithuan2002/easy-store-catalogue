@@ -1,14 +1,20 @@
-
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Card } from "./ui/card";
+import OpenAI from "openai";
 
 interface StyleChange {
   title: string;
   description: string;
   styles: Record<string, any>;
+  imageUrl?: string;
 }
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true
+});
 
 export const StoreDesignAssistant = () => {
   const [prompt, setPrompt] = useState("");
@@ -60,140 +66,69 @@ export const StoreDesignAssistant = () => {
     });
   };
 
-  const getDesignStyles = (promptText: string) => {
+  const generateDesignWithDallE = async (promptText: string) => {
+    try {
+      const response = await openai.images.generate({
+        prompt: `Modern e-commerce store design with ${promptText} style. Show color scheme and layout.`,
+        n: 1,
+        size: "1024x1024",
+      });
+
+      return response.data[0].url;
+    } catch (error) {
+      console.error('Error generating image:', error);
+      return null;
+    }
+  };
+
+  const getDesignStyles = async (promptText: string) => {
+    const imageUrl = await generateDesignWithDallE(promptText);
     const promptLower = promptText.toLowerCase();
-    
-    // Handle color-specific requests
-    if (promptLower.includes('blue')) {
-      return {
-        styles: {
-          '--background': '210 100% 97%',
-          '--foreground': '222.2 84% 4.9%',
-          backgroundColor: '#EBF8FF',
-          cardBackground: '#ffffff',
-          buttonColor: '#3B82F6',
-          buttonText: '#ffffff',
-          headingColor: '#1E3A8A',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          borderRadius: '0.75rem',
-          boxShadow: '0 4px 6px rgba(59, 130, 246, 0.1)',
-          padding: '1.5rem'
-        },
-        name: 'Blue Theme'
-      };
-    }
-    
-    if (promptLower.includes('decent') || promptLower.includes('clean') || promptLower.includes('neat')) {
-      return {
-        styles: {
-          '--background': '0 0% 98%',
-          '--foreground': '222.2 84% 4.9%',
-          backgroundColor: '#fafafa',
-          cardBackground: '#ffffff',
-          buttonColor: '#4B5563',
-          buttonText: '#ffffff',
-          headingColor: '#111827',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          borderRadius: '0.5rem',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-          padding: '1.25rem'
-        },
-        name: 'Professional'
-      };
-    }
-    
-    if (promptLower.includes('modern') || promptLower.includes('sleek')) {
-      return {
-        styles: {
-          '--background': '0 0% 100%',
-          '--foreground': '222.2 84% 4.9%',
-          '--card': '0 0% 100%',
-          '--card-foreground': '222.2 84% 4.9%',
-          '--primary': '221.2 83.2% 53.3%',
-          backgroundColor: '#ffffff',
-          cardBackground: '#ffffff',
-          buttonColor: '#2563eb',
-          buttonText: '#ffffff',
-          headingColor: '#1e293b',
-          fontFamily: 'Inter, system-ui, sans-serif',
-          borderRadius: '0.75rem',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          padding: '1.5rem'
-        },
-        name: 'Modern'
-      };
-    }
-    
-    if (promptLower.includes('minimal') || promptLower.includes('clean')) {
-      return {
-        styles: {
-          '--background': '0 0% 98%',
-          '--foreground': '240 10% 3.9%',
-          backgroundColor: '#fafafa',
-          cardBackground: '#ffffff',
-          buttonColor: '#18181b',
-          buttonText: '#ffffff',
-          headingColor: '#18181b',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          borderRadius: '0.5rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-          padding: '1rem'
-        },
-        name: 'Minimal'
-      };
-    }
-    
-    if (promptLower.includes('bold') || promptLower.includes('dark')) {
-      return {
-        styles: {
-          '--background': '222.2 84% 4.9%',
-          '--foreground': '210 40% 98%',
-          backgroundColor: '#1a1a1a',
-          cardBackground: '#2d2d2d',
-          buttonColor: '#3b82f6',
-          buttonText: '#ffffff',
-          headingColor: '#ffffff',
-          fontFamily: 'Inter, system-ui, sans-serif',
-          borderRadius: '1rem',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-          padding: '2rem'
-        },
-        name: 'Bold'
-      };
+
+    let styles = {
+      '--background': '0 0% 100%',
+      '--foreground': '222.2 84% 4.9%',
+      backgroundColor: '#ffffff',
+      cardBackground: '#ffffff',
+      buttonColor: '#2563eb',
+      buttonText: '#ffffff',
+      headingColor: '#1e293b',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      borderRadius: '0.75rem',
+      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+      padding: '1.5rem'
+    };
+
+    // Customize styles based on prompt
+    if (promptLower.includes('modern')) {
+      styles.buttonColor = '#2563eb';
+    } else if (promptLower.includes('minimal')) {
+      styles.buttonColor = '#18181b';
+      styles.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+    } else if (promptLower.includes('bold')) {
+      styles.backgroundColor = '#1a1a1a';
+      styles.cardBackground = '#2d2d2d';
+      styles.headingColor = '#ffffff';
     }
 
-    if (promptLower.includes('colorful') || promptLower.includes('vibrant')) {
-      return {
-        styles: {
-          '--background': '142.1 76.2% 36.3%',
-          '--foreground': '355.7 100% 97.3%',
-          backgroundColor: '#2ecc71',
-          cardBackground: '#ffffff',
-          buttonColor: '#e74c3c',
-          buttonText: '#ffffff',
-          headingColor: '#2c3e50',
-          fontFamily: 'system-ui, sans-serif',
-          borderRadius: '0.75rem',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          padding: '1.5rem'
-        },
-        name: 'Colorful'
-      };
-    }
-    
-    return getDesignStyles('modern');
+    return {
+      styles,
+      name: promptText,
+      imageUrl
+    };
   };
 
   const handleDesignSuggestion = async () => {
     if (!prompt.trim()) return;
-    
+
     setIsLoading(true);
     try {
-      const { styles, name } = getDesignStyles(prompt);
+      const { styles, name, imageUrl } = await getDesignStyles(prompt);
       const suggestion = {
         title: `${name} Design`,
-        description: `Applied ${name.toLowerCase()} design with optimized layout and styling`,
-        styles
+        description: `Applied ${name.toLowerCase()} design with AI-generated styling`,
+        styles,
+        imageUrl
       };
 
       setSuggestions([suggestion]);
@@ -207,10 +142,10 @@ export const StoreDesignAssistant = () => {
 
   return (
     <Card className="p-6 space-y-4 max-w-xl mx-auto my-4">
-      <h2 className="text-2xl font-bold">Store Design Assistant</h2>
+      <h2 className="text-2xl font-bold">AI Store Design Assistant</h2>
       <div className="space-y-2">
         <Textarea
-          placeholder="Describe your desired store design (e.g., 'Make it modern', 'Make it minimal', 'Make it bold', 'Make it colorful')"
+          placeholder="Describe your desired store design (e.g., 'Make it modern and luxurious', 'Create a minimal tech store look')"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           className="min-h-[100px]"
@@ -220,17 +155,24 @@ export const StoreDesignAssistant = () => {
           disabled={isLoading || !prompt.trim()}
           className="w-full"
         >
-          {isLoading ? "Applying design..." : "Apply Design Changes"}
+          {isLoading ? "Generating AI Design..." : "Generate Design"}
         </Button>
       </div>
 
       {suggestions.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-xl font-semibold">Applied Design Changes</h3>
+          <h3 className="text-xl font-semibold">AI-Generated Design</h3>
           {suggestions.map((suggestion, index) => (
-            <Card key={index} className="p-4">
+            <Card key={index} className="p-4 space-y-4">
               <h4 className="font-bold">{suggestion.title}</h4>
               <p className="text-gray-600">{suggestion.description}</p>
+              {suggestion.imageUrl && (
+                <img 
+                  src={suggestion.imageUrl} 
+                  alt="AI-generated design suggestion" 
+                  className="w-full rounded-lg shadow-md"
+                />
+              )}
             </Card>
           ))}
         </div>
