@@ -61,11 +61,18 @@ const Index = () => {
     setIsCreatingStore(true);
     try {
       // First create the store
+      // Get WhatsApp number from user
+      const whatsappNumber = prompt("Please enter your WhatsApp number (with country code, e.g., +1234567890):");
+      if (!whatsappNumber) {
+        throw new Error("WhatsApp number is required");
+      }
+
       const { data: store, error: storeError } = await supabase
         .from('stores')
         .insert({
           name: 'My Store',
-          sheets_url: spreadsheetUrl
+          sheets_url: spreadsheetUrl,
+          whatsapp_number: whatsappNumber
         })
         .select()
         .single();
