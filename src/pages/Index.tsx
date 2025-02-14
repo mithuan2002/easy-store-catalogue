@@ -375,11 +375,12 @@ const Index = () => {
             />
             <div className="flex justify-center">
               <Button
-                disabled={true}
+                onClick={handleStoreCreation}
+                disabled={isCreatingStore}
                 size="lg"
-                className="mt-8 opacity-50 cursor-not-allowed"
+                className="mt-8 bg-black text-white hover:bg-gray-900 shadow-lg fixed-visible"
               >
-                Create Store
+                {isCreatingStore ? "Creating Store..." : "Create Store"}
               </Button>
             </div>
           </div>

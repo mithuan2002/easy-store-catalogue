@@ -180,12 +180,11 @@ export const StoreDesignAssistant = () => {
       </div>
       <div className="fixed bottom-4 right-4 z-50">
         <Button
-          onClick={handleCreateStore}
-          disabled={isCreatingStore}
+          disabled={true}
           size="lg"
-          className="bg-black text-white hover:bg-gray-900 shadow-lg"
+          className="opacity-50 cursor-not-allowed bg-gray-500 text-white"
         >
-          {isCreatingStore ? "Creating Store..." : "Create Store"}
+          Create Store
         </Button>
       </div>
     </div>
