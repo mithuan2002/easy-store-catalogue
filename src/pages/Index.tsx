@@ -229,7 +229,11 @@ const Index = () => {
         <SpreadsheetInput onSubmit={handleSpreadsheetSubmit} isLoading={isLoading} />
         {products.length > 0 && (
           <div className="mt-12 space-y-8">
-            <ProductGrid products={products} />
+            <ProductGrid 
+              products={products} 
+              selectedProducts={new Set()} 
+              onToggleSelect={() => {}}
+            />
             <div className="flex justify-center">
               <Button
                 onClick={handleCreateStore}
