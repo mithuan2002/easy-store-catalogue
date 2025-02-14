@@ -2,14 +2,8 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Get the database URL from environment
-const SUPABASE_URL = import.meta.env.DATABASE_URL || 'postgresql://localhost:5432/defaultdb';
-const SUPABASE_ANON_KEY = 'dummy-key-not-needed-for-direct-postgres';
+// Get database URL from environment variables
+const SUPABASE_URL = 'https://tpqrstetovsafkzoeyjf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRwcXJzdGV0b3ZzYWZrem9leWpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MzI3ODEsImV4cCI6MjA1NTAwODc4MX0.87EyMfY_dq9wkTLQC3yOUcGMm-ICFj4eftfVj6bKY_c';
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-    detectSessionInUrl: false
-  }
-});
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);
