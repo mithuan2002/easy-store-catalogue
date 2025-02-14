@@ -23,6 +23,7 @@ export const StoreDesignAssistant = () => {
     secondary: "#4b5563",
     accent: "#06b6d4"
   });
+  const [isCreatingStore, setIsCreatingStore] = useState(false); // Assumed to exist
 
   const applyStyles = (styles: Record<string, any>) => {
     const root = document.documentElement;
@@ -81,6 +82,13 @@ export const StoreDesignAssistant = () => {
   const handleThemeSelect = (themeName: keyof typeof presetThemes) => {
     applyStyles(presetThemes[themeName]);
   };
+
+  const handleCreateStore = () => {
+    setIsCreatingStore(true);
+    // Add your create store logic here
+    setTimeout(() => setIsCreatingStore(false), 2000); // Simulate creation
+  }; // Assumed to exist
+
 
   return (
     <div className="flex h-screen">
@@ -258,6 +266,16 @@ export const StoreDesignAssistant = () => {
             </Button>
           </Card>
         </div>
+      </div>
+      <div className="fixed bottom-4 right-4">
+        <Button
+          onClick={handleCreateStore}
+          disabled={isCreatingStore}
+          size="lg"
+          className="bg-primary text-white hover:bg-primary/90"
+        >
+          {isCreatingStore ? "Creating Store..." : "Create Store"}
+        </Button>
       </div>
     </div>
   );
