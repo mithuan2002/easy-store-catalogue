@@ -18,7 +18,11 @@ export const StoreDesignAssistant = () => {
   const applyStyles = (styles: Record<string, any>) => {
     const root = document.documentElement;
     Object.entries(styles).forEach(([key, value]) => {
-      root.style.setProperty(`--${key}`, value as string);
+      const cssVar = key.startsWith('--') ? key : `--${key}`;
+      root.style.setProperty(cssVar, value);
+      // Also apply direct styles for background and text colors
+      if (key === 'background') document.body.style.backgroundColor = value;
+      if (key === 'text') document.body.style.color = value;
     });
   };
 
