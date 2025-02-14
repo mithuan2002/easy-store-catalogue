@@ -13,9 +13,6 @@ interface StyleChange {
 }
 
 export const StoreDesignAssistant = () => {
-  const [prompt, setPrompt] = useState("");
-  const [suggestions, setSuggestions] = useState<StyleChange[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [previewStyles, setPreviewStyles] = useState<Record<string, any>>({
     background: "#ffffff",
     text: "#000000",
@@ -23,7 +20,7 @@ export const StoreDesignAssistant = () => {
     secondary: "#4b5563",
     accent: "#06b6d4"
   });
-  const [isCreatingStore, setIsCreatingStore] = useState(false); // Assumed to exist
+  const [isCreatingStore, setIsCreatingStore] = useState(false); // Retained from original
 
   const applyStyles = (styles: Record<string, any>) => {
     const root = document.documentElement;
@@ -62,20 +59,6 @@ export const StoreDesignAssistant = () => {
       primary: '#22c55e',
       secondary: '#15803d',
       accent: '#4ade80'
-    },
-    sunset: {
-      background: '#fff7ed',
-      text: '#9a3412',
-      primary: '#f97316',
-      secondary: '#ea580c',
-      accent: '#fb923c'
-    },
-    purple: {
-      background: '#faf5ff',
-      text: '#6b21a8',
-      primary: '#a855f7',
-      secondary: '#9333ea',
-      accent: '#c084fc'
     }
   };
 
@@ -97,7 +80,6 @@ export const StoreDesignAssistant = () => {
       setIsCreatingStore(false);
     }
   };
-
 
   return (
     <div className="flex h-screen">
@@ -124,101 +106,26 @@ export const StoreDesignAssistant = () => {
 
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Custom Colors</h3>
-
-          <div className="space-y-2">
-            <Label htmlFor="background">Background Color</Label>
-            <div className="flex gap-2">
-              <Input
-                type="color"
-                id="background"
-                value={previewStyles.background}
-                onChange={(e) => handleColorChange('background', e.target.value)}
-                className="w-12 h-8 p-0"
-              />
-              <Input
-                type="text"
-                value={previewStyles.background}
-                onChange={(e) => handleColorChange('background', e.target.value)}
-                className="flex-1"
-              />
+          {Object.entries(previewStyles).map(([key, value]) => (
+            <div key={key} className="space-y-2">
+              <Label htmlFor={key} className="capitalize">{key} Color</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="color"
+                  id={key}
+                  value={value}
+                  onChange={(e) => handleColorChange(key, e.target.value)}
+                  className="w-12 h-8 p-0"
+                />
+                <Input
+                  type="text"
+                  value={value}
+                  onChange={(e) => handleColorChange(key, e.target.value)}
+                  className="flex-1"
+                />
+              </div>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="text">Text Color</Label>
-            <div className="flex gap-2">
-              <Input
-                type="color"
-                id="text"
-                value={previewStyles.text}
-                onChange={(e) => handleColorChange('text', e.target.value)}
-                className="w-12 h-8 p-0"
-              />
-              <Input
-                type="text"
-                value={previewStyles.text}
-                onChange={(e) => handleColorChange('text', e.target.value)}
-                className="flex-1"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="primary">Primary Color</Label>
-            <div className="flex gap-2">
-              <Input
-                type="color"
-                id="primary"
-                value={previewStyles.primary}
-                onChange={(e) => handleColorChange('primary', e.target.value)}
-                className="w-12 h-8 p-0"
-              />
-              <Input
-                type="text"
-                value={previewStyles.primary}
-                onChange={(e) => handleColorChange('primary', e.target.value)}
-                className="flex-1"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="secondary">Secondary Color</Label>
-            <div className="flex gap-2">
-              <Input
-                type="color"
-                id="secondary"
-                value={previewStyles.secondary}
-                onChange={(e) => handleColorChange('secondary', e.target.value)}
-                className="w-12 h-8 p-0"
-              />
-              <Input
-                type="text"
-                value={previewStyles.secondary}
-                onChange={(e) => handleColorChange('secondary', e.target.value)}
-                className="flex-1"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="accent">Accent Color</Label>
-            <div className="flex gap-2">
-              <Input
-                type="color"
-                id="accent"
-                value={previewStyles.accent}
-                onChange={(e) => handleColorChange('accent', e.target.value)}
-                className="w-12 h-8 p-0"
-              />
-              <Input
-                type="text"
-                value={previewStyles.accent}
-                onChange={(e) => handleColorChange('accent', e.target.value)}
-                className="flex-1"
-              />
-            </div>
-          </div>
+          ))}
         </div>
       </Card>
 
@@ -244,7 +151,6 @@ export const StoreDesignAssistant = () => {
               Primary Button
             </Button>
           </Card>
-
           <Card className="p-4">
             <h4 className="text-lg font-bold mb-2" style={{ color: previewStyles.secondary }}>
               Secondary Section
@@ -259,7 +165,6 @@ export const StoreDesignAssistant = () => {
               Secondary Button
             </Button>
           </Card>
-
           <Card className="p-4">
             <h4 className="text-lg font-bold mb-2" style={{ color: previewStyles.accent }}>
               Accent Section
