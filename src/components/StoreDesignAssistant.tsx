@@ -67,13 +67,15 @@ export const StoreDesignAssistant = () => {
   };
 
   const handleCreateStore = () => {
+    if (!window.createStore) {
+      console.error('Store creation function not available');
+      return;
+    }
     setIsCreatingStore(true);
     try {
-      // Dispatch custom event with styles
-      const event = new CustomEvent('createStore', { detail: previewStyles });
-      window.dispatchEvent(event);
+      window.createStore(previewStyles);
     } catch (error) {
-      console.error('Failed to trigger store creation:', error);
+      console.error('Failed to create store:', error);
     } finally {
       setIsCreatingStore(false);
     }
