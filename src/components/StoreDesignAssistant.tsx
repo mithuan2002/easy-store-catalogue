@@ -10,117 +10,142 @@ interface StyleChange {
   styles: Record<string, any>;
 }
 
-const getDesignStyles = (prompt: string) => {
-  const promptLower = prompt.toLowerCase();
-  
-  // Sophisticated style mappings based on common design keywords
-  if (promptLower.includes('modern') || promptLower.includes('sleek')) {
-    return {
-      styles: {
-        '--background': '0 0% 100%',
-        '--foreground': '222.2 84% 4.9%',
-        '--card': '0 0% 100%',
-        '--card-foreground': '222.2 84% 4.9%',
-        '--primary': '221.2 83.2% 53.3%',
-        '--primary-foreground': '210 40% 98%',
-        '--radius': '0.75rem',
-        fontFamily: 'Inter, system-ui, sans-serif',
-        backgroundColor: '#ffffff',
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '2rem'
-      },
-      name: 'Modern'
-    };
-  }
-  
-  if (promptLower.includes('minimal') || promptLower.includes('clean')) {
-    return {
-      styles: {
-        '--background': '0 0% 98%',
-        '--foreground': '240 10% 3.9%',
-        '--card': '0 0% 100%',
-        '--card-foreground': '240 10% 3.9%',
-        '--primary': '240 5.9% 10%',
-        '--primary-foreground': '0 0% 98%',
-        '--radius': '0.5rem',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        backgroundColor: '#fafafa',
-        maxWidth: '1000px',
-        margin: '0 auto',
-        padding: '1.5rem'
-      },
-      name: 'Minimal'
-    };
-  }
-  
-  if (promptLower.includes('bold') || promptLower.includes('dark')) {
-    return {
-      styles: {
-        '--background': '222.2 84% 4.9%',
-        '--foreground': '210 40% 98%',
-        '--card': '222.2 84% 4.9%',
-        '--card-foreground': '210 40% 98%',
-        '--primary': '217.2 91.2% 59.8%',
-        '--primary-foreground': '222.2 47.4% 11.2%',
-        '--radius': '1rem',
-        fontFamily: 'Inter, system-ui, sans-serif',
-        backgroundColor: '#1a1a1a',
-        maxWidth: '1400px',
-        margin: '0 auto',
-        padding: '2rem'
-      },
-      name: 'Bold'
-    };
-  }
-
-  if (promptLower.includes('colorful') || promptLower.includes('vibrant')) {
-    return {
-      styles: {
-        '--background': '142.1 76.2% 36.3%',
-        '--foreground': '355.7 100% 97.3%',
-        '--card': '142.1 76.2% 36.3%',
-        '--card-foreground': '355.7 100% 97.3%',
-        '--primary': '355.7 100% 97.3%',
-        '--primary-foreground': '144.9 80.4% 10%',
-        '--radius': '0.75rem',
-        fontFamily: 'system-ui, sans-serif',
-        backgroundColor: '#2ecc71',
-        maxWidth: '1400px',
-        margin: '0 auto',
-        padding: '2rem'
-      },
-      name: 'Colorful'
-    };
-  }
-
-  // Default to modern style
-  return getDesignStyles('modern');
-};
-
-export const StoreDesignAssistant = () => {
+const StoreDesignAssistant = () => {
   const [prompt, setPrompt] = useState("");
   const [suggestions, setSuggestions] = useState<StyleChange[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const applyStyles = (styles: Record<string, any>) => {
+    // Get all relevant elements
     const root = document.documentElement;
     const body = document.body;
+    const productCards = document.querySelectorAll('.product-card');
+    const buttons = document.querySelectorAll('button');
+    const inputs = document.querySelectorAll('input, textarea');
+    const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
 
+    // Apply CSS variables and general styles
     Object.entries(styles).forEach(([key, value]) => {
       if (key.startsWith('--')) {
         root.style.setProperty(key, value as string);
       } else {
         body.style[key as any] = value as string;
       }
-      
-      // Apply styles to all product cards
-      if (key === 'backgroundColor') {
-        document.querySelectorAll('.product-card').forEach((card) => {
-          (card as HTMLElement).style.backgroundColor = value as string;
-        });
-      }
     });
+
+    // Apply specific element styles
+    productCards.forEach(card => {
+      const element = card as HTMLElement;
+      element.style.backgroundColor = styles.cardBackground || styles.backgroundColor || '#ffffff';
+      element.style.borderRadius = styles.borderRadius || '0.5rem';
+      element.style.padding = styles.padding || '1rem';
+      element.style.boxShadow = styles.boxShadow || '0 2px 4px rgba(0,0,0,0.1)';
+    });
+
+    buttons.forEach(button => {
+      const element = button as HTMLElement;
+      element.style.backgroundColor = styles.buttonColor || styles.primary || '#2563eb';
+      element.style.color = styles.buttonText || '#ffffff';
+      element.style.borderRadius = styles.buttonRadius || '0.375rem';
+    });
+
+    inputs.forEach(input => {
+      const element = input as HTMLElement;
+      element.style.backgroundColor = styles.inputBackground || '#ffffff';
+      element.style.borderColor = styles.borderColor || '#e2e8f0';
+      element.style.borderRadius = styles.inputRadius || '0.375rem';
+    });
+
+    headings.forEach(heading => {
+      const element = heading as HTMLElement;
+      element.style.color = styles.headingColor || styles.foreground || '#000000';
+      element.style.fontFamily = styles.fontFamily || 'inherit';
+    });
+  };
+
+  const getDesignStyles = (promptText: string) => {
+    const promptLower = promptText.toLowerCase();
+    
+    if (promptLower.includes('modern') || promptLower.includes('sleek')) {
+      return {
+        styles: {
+          '--background': '0 0% 100%',
+          '--foreground': '222.2 84% 4.9%',
+          '--card': '0 0% 100%',
+          '--card-foreground': '222.2 84% 4.9%',
+          '--primary': '221.2 83.2% 53.3%',
+          backgroundColor: '#ffffff',
+          cardBackground: '#ffffff',
+          buttonColor: '#2563eb',
+          buttonText: '#ffffff',
+          headingColor: '#1e293b',
+          fontFamily: 'Inter, system-ui, sans-serif',
+          borderRadius: '0.75rem',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          padding: '1.5rem'
+        },
+        name: 'Modern'
+      };
+    }
+    
+    if (promptLower.includes('minimal') || promptLower.includes('clean')) {
+      return {
+        styles: {
+          '--background': '0 0% 98%',
+          '--foreground': '240 10% 3.9%',
+          backgroundColor: '#fafafa',
+          cardBackground: '#ffffff',
+          buttonColor: '#18181b',
+          buttonText: '#ffffff',
+          headingColor: '#18181b',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          borderRadius: '0.5rem',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+          padding: '1rem'
+        },
+        name: 'Minimal'
+      };
+    }
+    
+    if (promptLower.includes('bold') || promptLower.includes('dark')) {
+      return {
+        styles: {
+          '--background': '222.2 84% 4.9%',
+          '--foreground': '210 40% 98%',
+          backgroundColor: '#1a1a1a',
+          cardBackground: '#2d2d2d',
+          buttonColor: '#3b82f6',
+          buttonText: '#ffffff',
+          headingColor: '#ffffff',
+          fontFamily: 'Inter, system-ui, sans-serif',
+          borderRadius: '1rem',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+          padding: '2rem'
+        },
+        name: 'Bold'
+      };
+    }
+
+    if (promptLower.includes('colorful') || promptLower.includes('vibrant')) {
+      return {
+        styles: {
+          '--background': '142.1 76.2% 36.3%',
+          '--foreground': '355.7 100% 97.3%',
+          backgroundColor: '#2ecc71',
+          cardBackground: '#ffffff',
+          buttonColor: '#e74c3c',
+          buttonText: '#ffffff',
+          headingColor: '#2c3e50',
+          fontFamily: 'system-ui, sans-serif',
+          borderRadius: '0.75rem',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          padding: '1.5rem'
+        },
+        name: 'Colorful'
+      };
+    }
+
+    return getDesignStyles('modern');
   };
 
   const handleDesignSuggestion = async () => {
