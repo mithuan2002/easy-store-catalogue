@@ -238,8 +238,10 @@ const Index = () => {
           <div className="mt-12 space-y-8">
             <ProductGrid 
               products={products} 
-              selectedProducts={new Set()} 
-              onToggleSelect={() => {}}
+              selectedProducts={new Set()}
+              onToggleSelect={(product) => {
+                console.log('Product selected:', product);
+              }}
               isEditable={true}
               onEdit={(product) => {
                 const newName = prompt("Enter new name:", product.name);
