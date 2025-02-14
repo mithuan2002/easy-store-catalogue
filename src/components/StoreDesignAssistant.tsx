@@ -63,6 +63,45 @@ export const StoreDesignAssistant = () => {
   const getDesignStyles = (promptText: string) => {
     const promptLower = promptText.toLowerCase();
     
+    // Handle color-specific requests
+    if (promptLower.includes('blue')) {
+      return {
+        styles: {
+          '--background': '210 100% 97%',
+          '--foreground': '222.2 84% 4.9%',
+          backgroundColor: '#EBF8FF',
+          cardBackground: '#ffffff',
+          buttonColor: '#3B82F6',
+          buttonText: '#ffffff',
+          headingColor: '#1E3A8A',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          borderRadius: '0.75rem',
+          boxShadow: '0 4px 6px rgba(59, 130, 246, 0.1)',
+          padding: '1.5rem'
+        },
+        name: 'Blue Theme'
+      };
+    }
+    
+    if (promptLower.includes('decent') || promptLower.includes('clean') || promptLower.includes('neat')) {
+      return {
+        styles: {
+          '--background': '0 0% 98%',
+          '--foreground': '222.2 84% 4.9%',
+          backgroundColor: '#fafafa',
+          cardBackground: '#ffffff',
+          buttonColor: '#4B5563',
+          buttonText: '#ffffff',
+          headingColor: '#111827',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          borderRadius: '0.5rem',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+          padding: '1.25rem'
+        },
+        name: 'Professional'
+      };
+    }
+    
     if (promptLower.includes('modern') || promptLower.includes('sleek')) {
       return {
         styles: {
