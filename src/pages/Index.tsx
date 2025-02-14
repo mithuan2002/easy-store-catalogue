@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SpreadsheetInput } from "@/components/SpreadsheetInput";
 import { ProductGrid } from "@/components/ProductGrid";
 import { StoreDesignAssistant } from "@/components/StoreDesignAssistant";
@@ -54,7 +54,7 @@ const Index = () => {
     }
   };
 
-  window.createStore = async (styles: any) => {
+  const handleStoreCreation = async (event: CustomEvent) => {
     if (!products.length || !spreadsheetUrl) {
       toast({
         title: "Error",
@@ -247,6 +247,96 @@ const Index = () => {
     }
   };
 
+  useEffect(() => {
+    const handleStoreCreation = async () => {
+      if (!products.length || !spreadsheetUrl) {
+        toast({
+          title: "Error",
+          description: "Please import products first",
+          variant: "destructive",
+        });
+        return;
+      }
+      //Existing createStore function remains unchanged.
+      window.createStore = async (styles: any) => {
+        if (!products.length || !spreadsheetUrl) {
+          toast({
+            title: "Error",
+            description: "Please import products first",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setIsCreatingStore(true);
+        try {
+          // First create the store
+          // Get WhatsApp number from user
+          const whatsappNumber = prompt("Please enter your WhatsApp number (with country code, e.g., +1234567890):");
+          if (!whatsappNumber) {
+            throw new Error("WhatsApp number is required");
+          }
+
+          const { data: store, error: storeError } = await supabase
+            .from('stores')
+            .insert({
+              name: 'My Store',
+              sheets_url: spreadsheetUrl,
+              whatsapp_number: whatsappNumber
+            })
+            .select()
+            .single();
+
+          if (storeError) throw storeError;
+
+          // Then insert all products with price converted to number
+          const productsToInsert = products.map(product => ({
+            name: product.name,
+            price: parseFloat(String(product.price)), // Convert to string first, then to number
+            description: product.description || null,
+            image_url: product.image || null,
+            store_id: store.id
+          }));
+
+          const { error: productsError } = await supabase
+            .from('products')
+            .insert(productsToInsert);
+
+          if (productsError) throw productsError;
+
+          // Show success message with the store URL
+          const storeUrl = `${window.location.origin}/store/${store.id}`;
+          toast({
+            title: "Success!",
+            description: (
+              <div className="space-y-2">
+                <p>Your store has been created successfully.</p>
+                <p className="font-medium">Store URL: <a href={storeUrl} className="text-blue-500 underline" target="_blank" rel="noopener noreferrer">{storeUrl}</a></p>
+              </div>
+            ),
+            duration: 10000, // Show for 10 seconds so user has time to copy
+          });
+
+        } catch (error) {
+          console.error('Error creating store:', error);
+          toast({
+            title: "Error",
+            description: "Failed to create store. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsCreatingStore(false);
+        }
+      };
+
+
+      window.dispatchEvent(new CustomEvent('createStore'));
+    };
+
+    window.addEventListener('createStore', handleStoreCreation as EventListener);
+    return () => window.removeEventListener('createStore', handleStoreCreation as EventListener);
+  }, [products, spreadsheetUrl, toast]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto py-12 px-4">
@@ -284,7 +374,7 @@ const Index = () => {
             />
             <div className="flex justify-center">
               <Button
-                onClick={handleCreateStore}
+                onClick={handleStoreCreation}
                 disabled={isCreatingStore}
                 size="lg"
                 className="mt-8"
