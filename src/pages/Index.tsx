@@ -248,7 +248,8 @@ const Index = () => {
   };
 
   useEffect(() => {
-    const handleStoreCreation = async () => {
+    const handleStoreCreation = async (event: CustomEvent) => {
+      const styles = event.detail;
       if (!products.length || !spreadsheetUrl) {
         toast({
           title: "Error",
