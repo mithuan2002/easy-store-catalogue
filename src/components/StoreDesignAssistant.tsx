@@ -4,6 +4,8 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Card } from "./ui/card";
 import { Separator } from "./ui/separator";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 interface StyleChange {
   title: string;
@@ -15,7 +17,13 @@ export const StoreDesignAssistant = () => {
   const [prompt, setPrompt] = useState("");
   const [suggestions, setSuggestions] = useState<StyleChange[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [previewStyles, setPreviewStyles] = useState<Record<string, any>>({});
+  const [previewStyles, setPreviewStyles] = useState<Record<string, any>>({
+    background: "#ffffff",
+    text: "#000000",
+    primary: "#2563eb",
+    secondary: "#4b5563",
+    accent: "#06b6d4"
+  });
 
   const applyStyles = (styles: Record<string, any>) => {
     const root = document.documentElement;
@@ -28,110 +36,174 @@ export const StoreDesignAssistant = () => {
     setPreviewStyles(styles);
   };
 
-  const generateKhromaColors = (promptText: string) => {
-    const colorPalettes = {
-      modern: {
-        primary: '#2563eb',
-        secondary: '#4b5563',
-        accent: '#06b6d4',
-        background: '#f8fafc',
-        text: '#1e293b'
-      },
-      minimal: {
-        primary: '#000000',
-        secondary: '#404040',
-        accent: '#737373',
-        background: '#ffffff',
-        text: '#171717'
-      },
-      vibrant: {
-        primary: '#7c3aed',
-        secondary: '#2dd4bf',
-        accent: '#f43f5e',
-        background: '#fafafa',
-        text: '#18181b'
-      },
-      elegant: {
-        primary: '#a78bfa',
-        secondary: '#f0abfc',
-        accent: '#818cf8',
-        background: '#fdf4ff',
-        text: '#4c1d95'
-      }
-    };
-
-    const promptLower = promptText.toLowerCase();
-    let selectedPalette = 'modern';
-
-    if (promptLower.includes('minimal')) selectedPalette = 'minimal';
-    else if (promptLower.includes('vibrant')) selectedPalette = 'vibrant';
-    else if (promptLower.includes('elegant')) selectedPalette = 'elegant';
-
-    return colorPalettes[selectedPalette as keyof typeof colorPalettes];
+  const handleColorChange = (key: string, value: string) => {
+    const newStyles = { ...previewStyles, [key]: value };
+    applyStyles(newStyles);
   };
 
-  const handleDesignGeneration = () => {
-    if (!prompt.trim()) return;
-
-    setIsLoading(true);
-    try {
-      const colors = generateKhromaColors(prompt);
-      const suggestion = {
-        title: `${prompt} Design`,
-        description: `Khroma-inspired ${prompt.toLowerCase()} color palette`,
-        styles: colors
-      };
-
-      setSuggestions([suggestion]);
-      applyStyles(colors);
-    } catch (error) {
-      console.error('Error generating design:', error);
-    } finally {
-      setIsLoading(false);
+  const presetThemes = {
+    modern: {
+      background: '#ffffff',
+      text: '#1e293b',
+      primary: '#2563eb',
+      secondary: '#4b5563',
+      accent: '#06b6d4'
+    },
+    dark: {
+      background: '#1e293b',
+      text: '#f8fafc',
+      primary: '#60a5fa',
+      secondary: '#94a3b8',
+      accent: '#22d3ee'
+    },
+    nature: {
+      background: '#f0fdf4',
+      text: '#166534',
+      primary: '#22c55e',
+      secondary: '#15803d',
+      accent: '#4ade80'
+    },
+    sunset: {
+      background: '#fff7ed',
+      text: '#9a3412',
+      primary: '#f97316',
+      secondary: '#ea580c',
+      accent: '#fb923c'
+    },
+    purple: {
+      background: '#faf5ff',
+      text: '#6b21a8',
+      primary: '#a855f7',
+      secondary: '#9333ea',
+      accent: '#c084fc'
     }
+  };
+
+  const handleThemeSelect = (themeName: keyof typeof presetThemes) => {
+    applyStyles(presetThemes[themeName]);
   };
 
   return (
     <div className="flex h-screen">
       <Card className="w-1/2 p-6 space-y-4 overflow-y-auto">
         <h2 className="text-2xl font-bold">Store Design Assistant</h2>
-        <div className="space-y-2">
-          <Textarea
-            placeholder="Describe your desired design style (e.g., 'modern', 'minimal', 'vibrant', 'elegant')"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            className="min-h-[100px]"
-          />
-          <Button 
-            onClick={handleDesignGeneration}
-            disabled={isLoading || !prompt.trim()}
-            className="w-full"
-          >
-            {isLoading ? "Generating Design..." : "Generate Design"}
-          </Button>
-        </div>
-
-        {suggestions.length > 0 && (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Color Palette</h3>
-            {suggestions.map((suggestion, index) => (
-              <Card key={index} className="p-4 space-y-4">
-                <h4 className="font-bold">{suggestion.title}</h4>
-                <p className="text-gray-600">{suggestion.description}</p>
-                <div className="grid grid-cols-5 gap-2">
-                  {Object.entries(suggestion.styles).map(([key, value], i) => (
-                    <div
-                      key={i}
-                      className="aspect-square rounded-lg"
-                      style={{ backgroundColor: value }}
-                      title={`${key}: ${value}`}
-                    />
-                  ))}
-                </div>
-              </Card>
+        
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Quick Themes</h3>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(presetThemes).map(([name]) => (
+              <Button
+                key={name}
+                onClick={() => handleThemeSelect(name as keyof typeof presetThemes)}
+                variant="outline"
+                className="capitalize"
+              >
+                {name}
+              </Button>
             ))}
           </div>
-        )}
+        </div>
+
+        <Separator />
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Custom Colors</h3>
+          
+          <div className="space-y-2">
+            <Label htmlFor="background">Background Color</Label>
+            <div className="flex gap-2">
+              <Input
+                type="color"
+                id="background"
+                value={previewStyles.background}
+                onChange={(e) => handleColorChange('background', e.target.value)}
+                className="w-12 h-8 p-0"
+              />
+              <Input
+                type="text"
+                value={previewStyles.background}
+                onChange={(e) => handleColorChange('background', e.target.value)}
+                className="flex-1"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="text">Text Color</Label>
+            <div className="flex gap-2">
+              <Input
+                type="color"
+                id="text"
+                value={previewStyles.text}
+                onChange={(e) => handleColorChange('text', e.target.value)}
+                className="w-12 h-8 p-0"
+              />
+              <Input
+                type="text"
+                value={previewStyles.text}
+                onChange={(e) => handleColorChange('text', e.target.value)}
+                className="flex-1"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="primary">Primary Color</Label>
+            <div className="flex gap-2">
+              <Input
+                type="color"
+                id="primary"
+                value={previewStyles.primary}
+                onChange={(e) => handleColorChange('primary', e.target.value)}
+                className="w-12 h-8 p-0"
+              />
+              <Input
+                type="text"
+                value={previewStyles.primary}
+                onChange={(e) => handleColorChange('primary', e.target.value)}
+                className="flex-1"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="secondary">Secondary Color</Label>
+            <div className="flex gap-2">
+              <Input
+                type="color"
+                id="secondary"
+                value={previewStyles.secondary}
+                onChange={(e) => handleColorChange('secondary', e.target.value)}
+                className="w-12 h-8 p-0"
+              />
+              <Input
+                type="text"
+                value={previewStyles.secondary}
+                onChange={(e) => handleColorChange('secondary', e.target.value)}
+                className="flex-1"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="accent">Accent Color</Label>
+            <div className="flex gap-2">
+              <Input
+                type="color"
+                id="accent"
+                value={previewStyles.accent}
+                onChange={(e) => handleColorChange('accent', e.target.value)}
+                className="w-12 h-8 p-0"
+              />
+              <Input
+                type="text"
+                value={previewStyles.accent}
+                onChange={(e) => handleColorChange('accent', e.target.value)}
+                className="flex-1"
+              />
+            </div>
+          </div>
+        </div>
       </Card>
 
       <Separator orientation="vertical" className="mx-2" />
