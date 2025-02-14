@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SpreadsheetInput } from "@/components/SpreadsheetInput";
 import { ProductGrid } from "@/components/ProductGrid";
+import { StoreDesignAssistant } from "@/components/StoreDesignAssistant";
 import type { Product } from "@/components/ProductCard";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
