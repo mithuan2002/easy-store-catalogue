@@ -87,9 +87,17 @@ const Index = () => {
 
       if (productsError) throw productsError;
 
+      // Show success message with the store URL
+      const storeUrl = `${window.location.origin}/store/${store.id}`;
       toast({
         title: "Success!",
-        description: "Your store has been created successfully.",
+        description: (
+          <div className="space-y-2">
+            <p>Your store has been created successfully.</p>
+            <p className="font-medium">Store URL: <a href={storeUrl} className="text-blue-500 underline" target="_blank" rel="noopener noreferrer">{storeUrl}</a></p>
+          </div>
+        ),
+        duration: 10000, // Show for 10 seconds so user has time to copy
       });
 
     } catch (error) {
