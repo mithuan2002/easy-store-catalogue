@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Card } from "./ui/card";
+import { Separator } from "./ui/separator";
 
 interface StyleChange {
   title: string;
@@ -14,16 +15,17 @@ export const StoreDesignAssistant = () => {
   const [prompt, setPrompt] = useState("");
   const [suggestions, setSuggestions] = useState<StyleChange[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [previewStyles, setPreviewStyles] = useState<Record<string, any>>({});
 
   const applyStyles = (styles: Record<string, any>) => {
     const root = document.documentElement;
     Object.entries(styles).forEach(([key, value]) => {
       const cssVar = key.startsWith('--') ? key : `--${key}`;
       root.style.setProperty(cssVar, value);
-      // Also apply direct styles for background and text colors
       if (key === 'background') document.body.style.backgroundColor = value;
       if (key === 'text') document.body.style.color = value;
     });
+    setPreviewStyles(styles);
   };
 
   const generateKhromaColors = (promptText: string) => {
@@ -90,46 +92,103 @@ export const StoreDesignAssistant = () => {
   };
 
   return (
-    <Card className="p-6 space-y-4 max-w-xl mx-auto my-4">
-      <h2 className="text-2xl font-bold">Store Design Assistant</h2>
-      <div className="space-y-2">
-        <Textarea
-          placeholder="Describe your desired design style (e.g., 'modern', 'minimal', 'vibrant', 'elegant')"
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          className="min-h-[100px]"
-        />
-        <Button 
-          onClick={handleDesignGeneration}
-          disabled={isLoading || !prompt.trim()}
-          className="w-full"
-        >
-          {isLoading ? "Generating Design..." : "Generate Design"}
-        </Button>
-      </div>
-
-      {suggestions.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold">Color Palette</h3>
-          {suggestions.map((suggestion, index) => (
-            <Card key={index} className="p-4 space-y-4">
-              <h4 className="font-bold">{suggestion.title}</h4>
-              <p className="text-gray-600">{suggestion.description}</p>
-              <div className="grid grid-cols-5 gap-2">
-                {Object.entries(suggestion.styles).map(([key, value], i) => (
-                  <div
-                    key={i}
-                    className="aspect-square rounded-lg"
-                    style={{ backgroundColor: value }}
-                    title={`${key}: ${value}`}
-                  />
-                ))}
-              </div>
-            </Card>
-          ))}
+    <div className="flex h-screen">
+      <Card className="w-1/2 p-6 space-y-4 overflow-y-auto">
+        <h2 className="text-2xl font-bold">Store Design Assistant</h2>
+        <div className="space-y-2">
+          <Textarea
+            placeholder="Describe your desired design style (e.g., 'modern', 'minimal', 'vibrant', 'elegant')"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            className="min-h-[100px]"
+          />
+          <Button 
+            onClick={handleDesignGeneration}
+            disabled={isLoading || !prompt.trim()}
+            className="w-full"
+          >
+            {isLoading ? "Generating Design..." : "Generate Design"}
+          </Button>
         </div>
-      )}
-    </Card>
+
+        {suggestions.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold">Color Palette</h3>
+            {suggestions.map((suggestion, index) => (
+              <Card key={index} className="p-4 space-y-4">
+                <h4 className="font-bold">{suggestion.title}</h4>
+                <p className="text-gray-600">{suggestion.description}</p>
+                <div className="grid grid-cols-5 gap-2">
+                  {Object.entries(suggestion.styles).map(([key, value], i) => (
+                    <div
+                      key={i}
+                      className="aspect-square rounded-lg"
+                      style={{ backgroundColor: value }}
+                      title={`${key}: ${value}`}
+                    />
+                  ))}
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Separator orientation="vertical" className="mx-2" />
+
+      <div className="w-1/2 p-6 overflow-y-auto" style={{ 
+        backgroundColor: previewStyles.background || '#ffffff',
+        color: previewStyles.text || '#000000'
+      }}>
+        <h2 className="text-2xl font-bold mb-6">Live Preview</h2>
+        <div className="space-y-6">
+          <Card className="p-4">
+            <h3 className="text-xl font-bold mb-4" style={{ color: previewStyles.primary }}>
+              Sample Header
+            </h3>
+            <p className="mb-4">
+              This is a preview of how your store might look with the selected color scheme.
+            </p>
+            <Button style={{ 
+              backgroundColor: previewStyles.primary,
+              color: previewStyles.background 
+            }}>
+              Primary Button
+            </Button>
+          </Card>
+
+          <Card className="p-4">
+            <h4 className="text-lg font-bold mb-2" style={{ color: previewStyles.secondary }}>
+              Secondary Section
+            </h4>
+            <p className="mb-4">
+              Here's how secondary elements will appear in your store.
+            </p>
+            <Button style={{ 
+              backgroundColor: previewStyles.secondary,
+              color: previewStyles.background 
+            }}>
+              Secondary Button
+            </Button>
+          </Card>
+
+          <Card className="p-4">
+            <h4 className="text-lg font-bold mb-2" style={{ color: previewStyles.accent }}>
+              Accent Section
+            </h4>
+            <p className="mb-4">
+              This shows how accent colors will be used throughout your store.
+            </p>
+            <Button style={{ 
+              backgroundColor: previewStyles.accent,
+              color: previewStyles.background 
+            }}>
+              Accent Button
+            </Button>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 };
 
