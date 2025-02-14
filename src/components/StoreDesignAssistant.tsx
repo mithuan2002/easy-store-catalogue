@@ -10,13 +10,12 @@ interface StyleChange {
   styles: Record<string, any>;
 }
 
-const StoreDesignAssistant = () => {
+export const StoreDesignAssistant = () => {
   const [prompt, setPrompt] = useState("");
   const [suggestions, setSuggestions] = useState<StyleChange[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const applyStyles = (styles: Record<string, any>) => {
-    // Get all relevant elements
     const root = document.documentElement;
     const body = document.body;
     const productCards = document.querySelectorAll('.product-card');
@@ -24,7 +23,6 @@ const StoreDesignAssistant = () => {
     const inputs = document.querySelectorAll('input, textarea');
     const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
 
-    // Apply CSS variables and general styles
     Object.entries(styles).forEach(([key, value]) => {
       if (key.startsWith('--')) {
         root.style.setProperty(key, value as string);
@@ -33,7 +31,6 @@ const StoreDesignAssistant = () => {
       }
     });
 
-    // Apply specific element styles
     productCards.forEach(card => {
       const element = card as HTMLElement;
       element.style.backgroundColor = styles.cardBackground || styles.backgroundColor || '#ffffff';
@@ -144,7 +141,7 @@ const StoreDesignAssistant = () => {
         name: 'Colorful'
       };
     }
-
+    
     return getDesignStyles('modern');
   };
 
