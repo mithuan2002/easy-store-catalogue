@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { SpreadsheetInput } from "@/components/SpreadsheetInput";
 import { ProductGrid } from "@/components/ProductGrid";
@@ -23,7 +22,7 @@ const Index = () => {
     const values = [];
     let currentValue = '';
     let insideQuotes = false;
-    
+
     for (let i = 0; i < row.length; i++) {
       const char = row[i];
       if (char === '"') {
@@ -120,13 +119,12 @@ const Index = () => {
   };
 
   const handleSpreadsheetSubmit = async (url: string) => {
-    setSpreadsheetUrl(url);
     setIsLoading(true);
-    const sheetId = extractSheetId(url);
+    setSpreadsheetUrl(url);
 
-    if (!sheetId) {
+    if (!url.includes('docs.google.com/spreadsheets')) {
       toast({
-        title: "Invalid URL",
+        title: "Error",
         description: "Please provide a valid Google Sheets URL",
         variant: "destructive",
       });
@@ -135,24 +133,36 @@ const Index = () => {
     }
 
     try {
+      const sheetId = extractSheetId(url);
+
+      if (!sheetId) {
+        toast({
+          title: "Invalid URL",
+          description: "Please provide a valid Google Sheets URL",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       // Convert Google Sheet to CSV format
       const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
       const response = await fetch(csvUrl);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch spreadsheet data');
       }
 
       const csvText = await response.text();
       const rows = csvText.split('\n').filter(row => row.trim().length > 0);
-      
+
       if (rows.length < 2) {
         throw new Error('Spreadsheet must contain at least headers and one product');
       }
 
       // Parse headers (first row)
       const headers = parseCsvRow(rows[0]).map(header => header.toLowerCase().trim());
-      
+
       // Validate required columns
       if (!headers.includes('name') || !headers.includes('price')) {
         throw new Error('Spreadsheet must contain "name" and "price" columns');
