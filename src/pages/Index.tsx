@@ -240,6 +240,27 @@ const Index = () => {
               products={products} 
               selectedProducts={new Set()} 
               onToggleSelect={() => {}}
+              isEditable={true}
+              onEdit={(product) => {
+                const newName = prompt("Enter new name:", product.name);
+                const newPrice = prompt("Enter new price:", product.price);
+                const newDescription = prompt("Enter new description:", product.description);
+                const newImage = prompt("Enter new image URL:", product.image);
+
+                if (newName && newPrice) {
+                  const updatedProduct = {
+                    ...product,
+                    name: newName,
+                    price: newPrice,
+                    description: newDescription || "",
+                    image: newImage || product.image,
+                  };
+
+                  setProducts(products.map(p => 
+                    p.id === product.id ? updatedProduct : p
+                  ));
+                }
+              }}
             />
             <div className="flex justify-center">
               <Button
