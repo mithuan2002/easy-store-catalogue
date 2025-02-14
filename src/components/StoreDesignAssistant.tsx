@@ -83,11 +83,20 @@ export const StoreDesignAssistant = () => {
     applyStyles(presetThemes[themeName]);
   };
 
-  const handleCreateStore = () => {
+  const handleCreateStore = async () => {
+    if (!window.createStore) {
+      console.error('Store creation function not available');
+      return;
+    }
     setIsCreatingStore(true);
-    // Add your create store logic here
-    setTimeout(() => setIsCreatingStore(false), 2000); // Simulate creation
-  }; // Assumed to exist
+    try {
+      await window.createStore(previewStyles);
+    } catch (error) {
+      console.error('Failed to create store:', error);
+    } finally {
+      setIsCreatingStore(false);
+    }
+  };
 
 
   return (
