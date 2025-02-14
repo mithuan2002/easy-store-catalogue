@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export interface Product {
   id: string;
@@ -11,7 +12,15 @@ export interface Product {
   category?: string;
 }
 
-export const ProductCard = ({ product }: { product: Product }) => {
+export const ProductCard = ({ 
+  product, 
+  isSelected, 
+  onToggleSelect 
+}: { 
+  product: Product;
+  isSelected: boolean;
+  onToggleSelect: (product: Product) => void;
+}) => {
   const [imageError, setImageError] = useState(false);
 
   const handleImageError = () => {
@@ -23,8 +32,14 @@ export const ProductCard = ({ product }: { product: Product }) => {
     : product.image;
 
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg animate-fadeIn">
+    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg animate-fadeIn relative">
       <CardContent className="p-0">
+        <div className="absolute top-4 right-4 z-10">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={() => onToggleSelect(product)}
+          />
+        </div>
         <div className="aspect-square overflow-hidden bg-gray-100">
           <img
             src={imageUrl}

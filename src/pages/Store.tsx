@@ -7,15 +7,16 @@ import type { Product } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { PencilIcon, CheckIcon, XIcon } from "lucide-react";
+import { PencilIcon, CheckIcon, XIcon, ShoppingCartIcon } from "lucide-react";
 
 const Store = () => {
   const { id } = useParams();
-  const [store, setStore] = useState<{ name: string } | null>(null);
+  const [store, setStore] = useState<{ name: string; whatsapp_number?: string } | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState("");
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -94,6 +95,53 @@ const Store = () => {
     setIsEditing(false);
   };
 
+  const handleToggleSelect = (product: Product) => {
+    setSelectedProducts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(product.id)) {
+        newSet.delete(product.id);
+      } else {
+        newSet.add(product.id);
+      }
+      return newSet;
+    });
+  };
+
+  const handlePlaceOrder = () => {
+    if (!store?.whatsapp_number) {
+      toast({
+        title: "Error",
+        description: "This store has not set up their WhatsApp number yet",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const selectedItems = products.filter(p => selectedProducts.has(p.id));
+    if (selectedItems.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one item to order",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create the order message
+    const orderMessage = `*New Order from ${store.name}*\n\n` +
+      selectedItems.map(item => 
+        `• ${item.name} - ${item.price}`
+      ).join('\n') +
+      `\n\nTotal Items: ${selectedItems.length}` +
+      `\nTotal Amount: ${selectedItems.reduce((sum, item) => sum + parseFloat(item.price.toString()), 0)}`;
+
+    // Create the WhatsApp URL
+    const whatsappUrl = `https://wa.me/${store.whatsapp_number}?text=${encodeURIComponent(orderMessage)}`;
+    
+    // Open WhatsApp in a new tab
+    window.open(whatsappUrl, '_blank');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -109,6 +157,8 @@ const Store = () => {
       </div>
     );
   }
+
+  const selectedCount = selectedProducts.size;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -153,7 +203,26 @@ const Store = () => {
             </>
           )}
         </div>
-        <ProductGrid products={products} />
+
+        <div className="sticky top-4 z-50 flex justify-between items-center bg-white p-4 rounded-lg shadow-md mb-6">
+          <div className="font-medium">
+            {selectedCount > 0 ? `${selectedCount} item${selectedCount === 1 ? '' : 's'} selected` : 'Select items to order'}
+          </div>
+          <Button
+            onClick={handlePlaceOrder}
+            disabled={selectedCount === 0}
+            className="gap-2"
+          >
+            <ShoppingCartIcon className="h-5 w-5" />
+            Place Order
+          </Button>
+        </div>
+
+        <ProductGrid 
+          products={products} 
+          selectedProducts={selectedProducts}
+          onToggleSelect={handleToggleSelect}
+        />
       </div>
     </div>
   );
