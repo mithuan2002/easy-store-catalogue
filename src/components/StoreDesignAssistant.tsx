@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
@@ -87,7 +86,7 @@ export const StoreDesignAssistant = () => {
     <div className="flex h-screen">
       <Card className="w-1/2 p-6 space-y-4 overflow-y-auto">
         <h2 className="text-2xl font-bold">Store Design Assistant</h2>
-        
+
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Quick Themes</h3>
           <div className="flex flex-wrap gap-2">
@@ -108,7 +107,7 @@ export const StoreDesignAssistant = () => {
 
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Custom Colors</h3>
-          
+
           <div className="space-y-2">
             <Label htmlFor="background">Background Color</Label>
             <div className="flex gap-2">
