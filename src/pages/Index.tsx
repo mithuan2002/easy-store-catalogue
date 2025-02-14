@@ -72,10 +72,10 @@ const Index = () => {
 
       if (storeError) throw storeError;
 
-      // Then insert all products
+      // Then insert all products with price converted to number
       const productsToInsert = products.map(product => ({
         name: product.name,
-        price: parseFloat(product.price),
+        price: parseFloat(String(product.price)), // Convert to string first, then to number
         description: product.description || null,
         image_url: product.image || null,
         store_id: store.id
