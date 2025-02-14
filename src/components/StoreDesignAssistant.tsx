@@ -15,75 +15,87 @@ export const StoreDesignAssistant = () => {
   const [suggestions, setSuggestions] = useState<StyleChange[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const applyStoreStyles = (styles: Record<string, any>) => {
-    // Apply styles to the root element
+  const applyStyles = (styles: Record<string, any>) => {
+    // Get the root element and body
     const root = document.documentElement;
-    
-    // Store theme colors
-    const themeColors = {
-      modern: {
-        '--background': '210 40% 98%',
-        '--foreground': '222.2 47.4% 11.2%',
-        '--muted': '210 40% 96.1%',
-        '--muted-foreground': '215.4 16.3% 46.9%',
-        '--primary': '222.2 47.4% 11.2%',
-        '--primary-foreground': '210 40% 98%',
-      },
-      minimal: {
-        '--background': '0 0% 100%',
-        '--foreground': '240 10% 3.9%',
-        '--muted': '240 4.8% 95.9%',
-        '--muted-foreground': '240 3.8% 46.1%',
-        '--primary': '240 5.9% 10%',
-        '--primary-foreground': '0 0% 98%',
-      },
-      colorful: {
-        '--background': '142.1 76.2% 36.3%',
-        '--foreground': '355.7 100% 97.3%',
-        '--muted': '142.1 76.2% 36.3%',
-        '--muted-foreground': '355.7 100% 97.3%',
-        '--primary': '355.7 100% 97.3%',
-        '--primary-foreground': '144.9 80.4% 10%',
-      }
-    };
+    const body = document.body;
 
-    // Apply theme based on prompt keywords
-    let theme = themeColors.modern;
-    if (prompt.toLowerCase().includes('minimal')) {
-      theme = themeColors.minimal;
-    } else if (prompt.toLowerCase().includes('colorful')) {
-      theme = themeColors.colorful;
-    }
-
-    // Apply CSS variables
-    Object.entries(theme).forEach(([key, value]) => {
-      root.style.setProperty(key, value);
-    });
-
-    // Apply additional custom styles
+    // Apply theme colors and styles
     Object.entries(styles).forEach(([key, value]) => {
-      document.body.style[key as any] = value as string;
+      if (key.startsWith('--')) {
+        root.style.setProperty(key, value as string);
+      } else {
+        body.style[key as any] = value as string;
+      }
     });
   };
 
   const handleDesignSuggestion = async () => {
     setIsLoading(true);
     try {
-      // Parse prompt and generate appropriate styles
-      const styles: Record<string, any> = {
-        fontFamily: prompt.includes('modern') ? 'Inter, sans-serif' : 'system-ui, sans-serif',
-        padding: prompt.includes('spacious') ? '2rem' : '1rem',
-        maxWidth: prompt.includes('wide') ? '1400px' : '1200px',
+      // Define different style presets based on keywords
+      const stylePresets = {
+        modern: {
+          '--background': '0 0% 100%',
+          '--foreground': '222.2 84% 4.9%',
+          '--card': '0 0% 100%',
+          '--card-foreground': '222.2 84% 4.9%',
+          '--primary': '221.2 83.2% 53.3%',
+          '--primary-foreground': '210 40% 98%',
+          fontFamily: 'Inter, sans-serif',
+          backgroundColor: '#ffffff',
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '2rem'
+        },
+        minimal: {
+          '--background': '0 0% 98%',
+          '--foreground': '240 10% 3.9%',
+          '--card': '0 0% 100%',
+          '--card-foreground': '240 10% 3.9%',
+          '--primary': '240 5.9% 10%',
+          '--primary-foreground': '0 0% 98%',
+          fontFamily: 'system-ui, sans-serif',
+          backgroundColor: '#fafafa',
+          maxWidth: '1000px',
+          margin: '0 auto',
+          padding: '1.5rem'
+        },
+        colorful: {
+          '--background': '142.1 76.2% 36.3%',
+          '--foreground': '355.7 100% 97.3%',
+          '--card': '142.1 76.2% 36.3%',
+          '--card-foreground': '355.7 100% 97.3%',
+          '--primary': '355.7 100% 97.3%',
+          '--primary-foreground': '144.9 80.4% 10%',
+          fontFamily: 'Inter, sans-serif',
+          backgroundColor: '#2ecc71',
+          maxWidth: '1400px',
+          margin: '0 auto',
+          padding: '2rem'
+        }
       };
 
+      // Select style preset based on prompt
+      let selectedStyle = stylePresets.modern;
+      let styleTitle = "Modern Design";
+      
+      if (prompt.toLowerCase().includes('minimal')) {
+        selectedStyle = stylePresets.minimal;
+        styleTitle = "Minimal Design";
+      } else if (prompt.toLowerCase().includes('colorful')) {
+        selectedStyle = stylePresets.colorful;
+        styleTitle = "Colorful Design";
+      }
+
       const suggestion = {
-        title: `${prompt.includes('modern') ? 'Modern' : 'Classic'} Design`,
-        description: `Applied ${prompt.includes('spacious') ? 'spacious' : 'compact'} layout with ${prompt.includes('modern') ? 'modern' : 'classic'} styling`,
-        styles
+        title: styleTitle,
+        description: `Applied ${styleTitle.toLowerCase()} with optimized layout and styling`,
+        styles: selectedStyle
       };
 
       setSuggestions([suggestion]);
-      applyStoreStyles(styles);
+      applyStyles(selectedStyle);
     } catch (error) {
       console.error('Error applying design:', error);
     } finally {
@@ -96,7 +108,7 @@ export const StoreDesignAssistant = () => {
       <h2 className="text-2xl font-bold">Store Design Assistant</h2>
       <div className="space-y-2">
         <Textarea
-          placeholder="Describe your desired store design (e.g., 'Make it modern and spacious')"
+          placeholder="Describe your desired store design (e.g., 'Make it modern', 'Make it minimal', 'Make it colorful')"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           className="min-h-[100px]"
