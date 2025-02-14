@@ -1,59 +1,46 @@
-
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Card } from "./ui/card";
 
-interface DesignSuggestion {
-  title: string;
-  description: string;
-}
-
 export const StoreDesignAssistant = () => {
   const [prompt, setPrompt] = useState("");
-  const [suggestions, setSuggestions] = useState<DesignSuggestion[]>([]);
+  const [suggestions, setSuggestions] = useState<Array<{title: string; description: string}>>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleGetSuggestions = async () => {
+  const handleDesignSuggestion = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
+      // Mock response for now - you would replace this with actual AI service call
+      setSuggestions([
+        {
+          title: "Modern Minimalist Design",
+          description: "Clean layout with ample white space and focused product imagery"
         },
-        body: JSON.stringify({
-          model: "deepseek-chat",
-          messages: [{
-            role: "user",
-            content: `Generate store design suggestions based on: ${prompt}. Format as JSON array with title and description fields.`
-          }]
-        })
-      });
-
-      const data = await response.json();
-      const parsedSuggestions = JSON.parse(data.choices[0].message.content);
-      setSuggestions(parsedSuggestions);
+        {
+          title: "Color Scheme Update",
+          description: "Use a calming palette of soft blues and neutral tones"
+        }
+      ]);
     } catch (error) {
-      console.error('Error getting suggestions:', error);
+      console.error('Error getting design suggestions:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="p-4 space-y-4">
+    <Card className="p-4 space-y-4">
       <h2 className="text-2xl font-bold">Store Design Assistant</h2>
       <div className="space-y-2">
         <Textarea
-          placeholder="Describe your store design preferences..."
+          placeholder="Describe your desired store design (e.g., 'Make it modern and minimalist')"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           className="min-h-[100px]"
         />
         <Button 
-          onClick={handleGetSuggestions}
+          onClick={handleDesignSuggestion}
           disabled={isLoading || !prompt.trim()}
           className="w-full"
         >
@@ -72,6 +59,6 @@ export const StoreDesignAssistant = () => {
           ))}
         </div>
       )}
-    </div>
+    </Card>
   );
 };

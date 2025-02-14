@@ -236,6 +236,7 @@ const Index = () => {
         <SpreadsheetInput onSubmit={handleSpreadsheetSubmit} isLoading={isLoading} />
         {products.length > 0 && (
           <div className="mt-12 space-y-8">
+            <StoreDesignAssistant />
             <ProductGrid 
               products={products} 
               selectedProducts={new Set()}
