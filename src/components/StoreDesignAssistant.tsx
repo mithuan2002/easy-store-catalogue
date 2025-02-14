@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
@@ -17,79 +18,68 @@ export const StoreDesignAssistant = () => {
   const applyStyles = (styles: Record<string, any>) => {
     const root = document.documentElement;
     Object.entries(styles).forEach(([key, value]) => {
-      root.style.setProperty(key, value as string);
+      root.style.setProperty(`--${key}`, value as string);
     });
   };
 
   const generateKhromaColors = (promptText: string) => {
-    // Khroma-inspired color combinations
-    const colorSchemes = {
+    const colorPalettes = {
       modern: {
-        primary: '#2D3436',
-        secondary: '#636E72',
-        accent: '#0984E3',
-        background: '#DFE6E9',
-        text: '#2D3436'
+        primary: '#2563eb',
+        secondary: '#4b5563',
+        accent: '#06b6d4',
+        background: '#f8fafc',
+        text: '#1e293b'
       },
       minimal: {
         primary: '#000000',
-        secondary: '#333333',
-        accent: '#666666',
-        background: '#FFFFFF',
-        text: '#000000'
+        secondary: '#404040',
+        accent: '#737373',
+        background: '#ffffff',
+        text: '#171717'
       },
-      bold: {
-        primary: '#6C5CE7',
-        secondary: '#A29BFE',
-        accent: '#00B894',
-        background: '#2D3436',
-        text: '#FFFFFF'
+      vibrant: {
+        primary: '#7c3aed',
+        secondary: '#2dd4bf',
+        accent: '#f43f5e',
+        background: '#fafafa',
+        text: '#18181b'
       },
       elegant: {
-        primary: '#B2967D',
-        secondary: '#E6BEAE',
-        accent: '#C98474',
-        background: '#EEE4E1',
-        text: '#4A4238'
+        primary: '#a78bfa',
+        secondary: '#f0abfc',
+        accent: '#818cf8',
+        background: '#fdf4ff',
+        text: '#4c1d95'
       }
     };
 
     const promptLower = promptText.toLowerCase();
-    let scheme = 'modern';
+    let selectedPalette = 'modern';
 
-    if (promptLower.includes('minimal')) scheme = 'minimal';
-    else if (promptLower.includes('bold')) scheme = 'bold';
-    else if (promptLower.includes('elegant')) scheme = 'elegant';
+    if (promptLower.includes('minimal')) selectedPalette = 'minimal';
+    else if (promptLower.includes('vibrant')) selectedPalette = 'vibrant';
+    else if (promptLower.includes('elegant')) selectedPalette = 'elegant';
 
-    const colors = colorSchemes[scheme as keyof typeof colorSchemes];
-
-    return {
-      '--primary': colors.primary,
-      '--secondary': colors.secondary,
-      '--accent': colors.accent,
-      '--background': colors.background,
-      '--text': colors.text,
-      backgroundColor: colors.background,
-      color: colors.text
-    };
+    return colorPalettes[selectedPalette as keyof typeof colorPalettes];
   };
 
-  const handleDesignSuggestion = async () => {
+  const handleDesignGeneration = () => {
     if (!prompt.trim()) return;
 
     setIsLoading(true);
     try {
-      const styles = generateKhromaColors(prompt);
+      const colors = generateKhromaColors(prompt);
       const suggestion = {
         title: `${prompt} Design`,
-        description: `Applied ${prompt.toLowerCase()} design with Khroma-inspired color palette`,
-        styles,
+        description: `Khroma-inspired ${prompt.toLowerCase()} color palette`,
+        styles: colors
       };
 
       setSuggestions([suggestion]);
-      applyStyles(styles);
+      applyStyles(colors);
     } catch (error) {
-      console.error('Error applying design:', error);
+      console.error('Error generating design:', error);
     } finally {
       setIsLoading(false);
     }
@@ -100,13 +90,13 @@ export const StoreDesignAssistant = () => {
       <h2 className="text-2xl font-bold">Store Design Assistant</h2>
       <div className="space-y-2">
         <Textarea
-          placeholder="Describe your desired store design (e.g., 'Make it modern and luxurious', 'Create a minimal tech store look')"
+          placeholder="Describe your desired design style (e.g., 'modern', 'minimal', 'vibrant', 'elegant')"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           className="min-h-[100px]"
         />
         <Button 
-          onClick={handleDesignSuggestion}
+          onClick={handleDesignGeneration}
           disabled={isLoading || !prompt.trim()}
           className="w-full"
         >
@@ -116,22 +106,20 @@ export const StoreDesignAssistant = () => {
 
       {suggestions.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-xl font-semibold">Generated Design</h3>
+          <h3 className="text-xl font-semibold">Color Palette</h3>
           {suggestions.map((suggestion, index) => (
             <Card key={index} className="p-4 space-y-4">
               <h4 className="font-bold">{suggestion.title}</h4>
               <p className="text-gray-600">{suggestion.description}</p>
               <div className="grid grid-cols-5 gap-2">
-                {Object.entries(suggestion.styles)
-                  .filter(([key]) => key.startsWith('--'))
-                  .map(([key, value], i) => (
-                    <div
-                      key={i}
-                      className="aspect-square rounded-lg"
-                      style={{ backgroundColor: value as string }}
-                      title={`${key}: ${value}`}
-                    />
-                  ))}
+                {Object.entries(suggestion.styles).map(([key, value], i) => (
+                  <div
+                    key={i}
+                    className="aspect-square rounded-lg"
+                    style={{ backgroundColor: value }}
+                    title={`${key}: ${value}`}
+                  />
+                ))}
               </div>
             </Card>
           ))}
