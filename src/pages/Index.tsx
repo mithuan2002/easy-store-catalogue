@@ -4,11 +4,15 @@ import { SpreadsheetInput } from "@/components/SpreadsheetInput";
 import { ProductGrid } from "@/components/ProductGrid";
 import type { Product } from "@/components/ProductCard";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isCreatingStore, setIsCreatingStore] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const { toast } = useToast();
+  const [spreadsheetUrl, setSpreadsheetUrl] = useState("");
 
   const extractSheetId = (url: string) => {
     const matches = url.match(/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
@@ -44,7 +48,64 @@ const Index = () => {
     }
   };
 
+  const handleCreateStore = async () => {
+    if (!products.length || !spreadsheetUrl) {
+      toast({
+        title: "Error",
+        description: "Please import products first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCreatingStore(true);
+    try {
+      // First create the store
+      const { data: store, error: storeError } = await supabase
+        .from('stores')
+        .insert({
+          name: 'My Store',
+          sheets_url: spreadsheetUrl
+        })
+        .select()
+        .single();
+
+      if (storeError) throw storeError;
+
+      // Then insert all products
+      const productsToInsert = products.map(product => ({
+        name: product.name,
+        price: parseFloat(product.price),
+        description: product.description || null,
+        image_url: product.image || null,
+        store_id: store.id
+      }));
+
+      const { error: productsError } = await supabase
+        .from('products')
+        .insert(productsToInsert);
+
+      if (productsError) throw productsError;
+
+      toast({
+        title: "Success!",
+        description: "Your store has been created successfully.",
+      });
+
+    } catch (error) {
+      console.error('Error creating store:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create store. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingStore(false);
+    }
+  };
+
   const handleSpreadsheetSubmit = async (url: string) => {
+    setSpreadsheetUrl(url);
     setIsLoading(true);
     const sheetId = extractSheetId(url);
 
@@ -82,12 +143,12 @@ const Index = () => {
         throw new Error('Spreadsheet must contain "name" and "price" columns');
       }
 
-      console.log('Headers found:', headers); // Debug log
+      console.log('Headers found:', headers);
 
       // Convert remaining rows to products
       const importedProducts = rows.slice(1).map((row, index) => {
         const values = parseCsvRow(row);
-        console.log('Processing row:', values); // Debug log
+        console.log('Processing row:', values);
 
         const product: Product = {
           id: (index + 1).toString(),
@@ -108,7 +169,6 @@ const Index = () => {
               product.description = value;
               break;
             case 'image':
-              // Only set the image URL if it's a valid URL
               if (value && isValidUrl(value)) {
                 product.image = value;
               }
@@ -119,7 +179,6 @@ const Index = () => {
           }
         });
 
-        // If no valid image URL is provided, use a placeholder
         if (!product.image) {
           product.image = "https://source.unsplash.com/400x400/?product";
         }
@@ -128,7 +187,7 @@ const Index = () => {
       }).filter(product => {
         const isValid = product.name && product.price;
         if (!isValid) {
-          console.log('Invalid product:', product); // Debug log
+          console.log('Invalid product:', product);
         }
         return isValid;
       });
@@ -137,7 +196,7 @@ const Index = () => {
         throw new Error('No valid products found in the spreadsheet. Make sure you have "name" and "price" columns with valid data.');
       }
 
-      console.log('Imported products:', importedProducts); // Debug log
+      console.log('Imported products:', importedProducts);
 
       setProducts(importedProducts);
       toast({
@@ -161,8 +220,18 @@ const Index = () => {
       <div className="container mx-auto py-12 px-4">
         <SpreadsheetInput onSubmit={handleSpreadsheetSubmit} isLoading={isLoading} />
         {products.length > 0 && (
-          <div className="mt-12">
+          <div className="mt-12 space-y-8">
             <ProductGrid products={products} />
+            <div className="flex justify-center">
+              <Button
+                onClick={handleCreateStore}
+                disabled={isCreatingStore}
+                size="lg"
+                className="mt-8"
+              >
+                {isCreatingStore ? "Creating Store..." : "Create Store"}
+              </Button>
+            </div>
           </div>
         )}
       </div>
