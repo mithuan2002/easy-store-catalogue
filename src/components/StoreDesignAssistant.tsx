@@ -179,12 +179,12 @@ export const StoreDesignAssistant = () => {
           </Card>
         </div>
       </div>
-      <div className="fixed bottom-4 right-4">
+      <div className="fixed bottom-4 right-4 z-50">
         <Button
           onClick={handleCreateStore}
           disabled={isCreatingStore}
           size="lg"
-          className="bg-primary text-white hover:bg-primary/90"
+          className="bg-black text-white hover:bg-gray-900 shadow-lg"
         >
           {isCreatingStore ? "Creating Store..." : "Create Store"}
         </Button>
